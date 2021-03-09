@@ -255,7 +255,7 @@ class MP(object):
         result = self.__rest_client.get(uri, params)
         return result
 
-    def post(self, uri, data, params=None):
+    def post(self, uri, data, params=None, extra_headers = None):
         """
         Generic resource post
         @param uri
@@ -266,7 +266,7 @@ class MP(object):
         if params is None:
             params = {}
 
-        result = self.__rest_client.post(uri, data, params)
+        result = self.__rest_client.post(uri, data, params, extra_headers=extra_headers)
         return result
 
     def put(self, uri, data, params=None):
@@ -335,12 +335,17 @@ class MP(object):
 
             return response
 
-        def post(self, uri, data=None, params=None, content_type=MIME_JSON):
+        def post(self, uri, data=None, params=None, content_type=MIME_JSON, extra_headers = None):
             if data is not None and content_type == self.MIME_JSON:
                 data = JSONEncoder().encode(data)
 
             s = self.get_session()
-            api_result = s.post(self.__API_BASE_URL+uri, params=params, data=data, headers={'x-product-id': self.PRODUCT_ID, 'x-tracking-id': self.TRACKING_ID, 'User-Agent':self.USER_AGENT, 'Content-type':content_type, 'Accept':self.MIME_JSON, 'x-platform-id':self.__outer.platform_id, 'x-integrator-id':self.__outer.integrator_id, 'x-corporation-id':self.__outer.corporation_id, self.AUTH_HEADER: self.getAuthorizationHeader()})
+            
+            headers = {'x-product-id': self.PRODUCT_ID, 'x-tracking-id': self.TRACKING_ID, 'User-Agent':self.USER_AGENT, 'Content-type':content_type, 'Accept':self.MIME_JSON, 'x-platform-id':self.__outer.platform_id, 'x-integrator-id':self.__outer.integrator_id, 'x-corporation-id':self.__outer.corporation_id, self.AUTH_HEADER: self.getAuthorizationHeader()}
+            if extra_headers:
+                headers = {**headers, **extra_headers}
+
+            api_result = s.post(self.__API_BASE_URL+uri, params=params, data=data, headers=headers)
 
             response = {
                 "status": api_result.status_code,
